@@ -1,84 +1,101 @@
-import React, { useRef, useState, useCallback } from 'react';
-import HTMLFlipBook from 'react-pageflip-enhanced';
+import { useState } from 'react';
 import './FlipBook.css';
 
-const Page = React.forwardRef((props, ref) => (
-  <div className="page" ref={ref}>
-    <img src={props.src} alt={`Page ${props.number}`} draggable={false} />
-  </div>
-));
-Page.displayName = 'Page';
+const IMAGES = ['/1.jpg', '/2.jpg', '/3.jpg', '/4.jpg', '/5.jpg', '/6.jpg', '/7.jpg'];
 
-function FlipBook() {
-  const book = useRef();
-  const [page, setPage]   = useState(0);
-  const [total, setTotal] = useState(0);
+// Renders an image positioned to show either the left or right half of the page
+function Img({ src, half = 'full' }) {
+  return (
+    <img
+      src={src}
+      draggable={false}
+      style={{
+        position: 'absolute',
+        top: 0,
+        height: '100%',
+        objectFit: 'cover',
+        display: 'block',
+        userSelect: 'none',
+        pointerEvents: 'none',
+        // 'full'  → width 100%, left 0    (fills full container)
+        // 'left'  → width 200%, left 0    (shows left half of image)
+        // 'right' → width 200%, left -100% (shows right half of image)
+        width: half === 'full' ? '100%' : '200%',
+        left: half === 'right' ? '-100%' : 0,
+      }}
+    />
+  );
+}
 
-  // onFlip fires on every page turn — e.object is the PageFlip instance
-  const onFlip = useCallback((e) => {
-    setPage(e.object.getCurrentPageIndex());
-  }, []);
+export default function FlipBook() {
+  const [page, setPage] = useState(0);
+  const [anim, setAnim] = useState(null); // { from, to, dir }
 
-  // onInit fires once the book is ready
-  const onInit = useCallback((e) => {
-    setTotal(e.object.getPageCount());
-    setPage(e.object.getCurrentPageIndex());
-  }, []);
+  const flip = (dir) => {
+    if (anim) return;
+    const to = dir === 'next' ? page + 1 : page - 1;
+    if (to < 0 || to >= IMAGES.length) return;
+    setAnim({ from: page, to, dir });
+  };
 
-  // onChangeState fires when animation finishes ('read') — final sync
-  const onChangeState = useCallback((e) => {
-    if (e.data === 'read') {
-      setPage(e.object.getCurrentPageIndex());
-    }
-  }, []);
+  const onDone = () => {
+    setPage(anim.to);
+    setAnim(null);
+  };
+
+  const isNext = anim?.dir === 'next';
 
   return (
-    <div className="container">
-      <div className="book-wrapper">
-        <HTMLFlipBook
-          ref={book}
-          width={800}
-          height={600}
-          size="stretch"
-          minWidth={300}
-          maxWidth={1400}
-          minHeight={200}
-          maxHeight={1050}
-          drawShadow={true}
-          flippingTime={1000}
-          usePortrait={false}
-          singlePage={true}
-          onFlip={onFlip}
-          onInit={onInit}
-          onChangeState={onChangeState}
-        >
-          <Page number={1} src="/1.jpg" />
-          <Page number={2} src="/2.jpg" />
-          <Page number={3} src="/3.jpg" />
-          <Page number={4} src="/4.jpg" />
-          <Page number={5} src="/5.jpg" />
-          <Page number={6} src="/6.jpg" />
-          <Page number={7} src="/7.jpg" />
-        </HTMLFlipBook>
-      </div>
+    <div className="fb-root">
+      <div className="fb-frame">
 
-      <div className="controls">
-        <button
-          onClick={() => book.current.pageFlip().flipPrev('bottom')}
-          disabled={page === 0}
-        >
-          ← Prev
-        </button>
-        <span className="page-num">{page + 1} / {total}</span>
-        <button
-          onClick={() => book.current.pageFlip().flipNext('bottom')}
-          disabled={page >= total - 1}
-        >
-          Next →
-        </button>
+        {/* ── Static (no animation) ── */}
+        {!anim && (
+          <div className="fb-page">
+            <Img src={IMAGES[page]} half="full" />
+          </div>
+        )}
+
+        {/* ── During flip ── */}
+        {anim && (
+          <>
+            {/* Bottom layer: destination page */}
+            <div className="fb-page">
+              <Img src={IMAGES[anim.to]} half="full" />
+            </div>
+
+            {/* Middle layer: the half of the current page that does NOT flip */}
+            <div className={`fb-half ${isNext ? 'fb-half--left' : 'fb-half--right'}`}>
+              <Img src={IMAGES[anim.from]} half={isNext ? 'left' : 'right'} />
+            </div>
+
+            {/* Top layer: the flipping panel */}
+            <div
+              className={`fb-panel fb-panel--${anim.dir}`}
+              onAnimationEnd={onDone}
+            >
+              <div className="fb-face fb-face--front">
+                <Img src={IMAGES[anim.from]} half={isNext ? 'right' : 'left'} />
+              </div>
+              <div className="fb-face fb-face--back">
+                <Img src={IMAGES[anim.to]} half={isNext ? 'left' : 'right'} />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Click zones — left half goes prev, right half goes next */}
+        <div className="fb-zone fb-zone--left"  onClick={() => flip('prev')} />
+        <div className="fb-zone fb-zone--right" onClick={() => flip('next')} />
+
+        {/* Controls — overlaid inside the frame */}
+        <div className="fb-controls">
+          <button onClick={() => flip('prev')} disabled={page === 0 || !!anim}>← Prev</button>
+          <span className="fb-count">{page + 1} / {IMAGES.length}</span>
+          <button onClick={() => flip('next')} disabled={page === IMAGES.length - 1 || !!anim}>Next →</button>
+        </div>
+
       </div>
     </div>
   );
 }
-
-export default FlipBook;
