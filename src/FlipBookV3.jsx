@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import './FlipBook.css';
+import './FlipBookV3.css';
 
 const IMAGES = ['/1.jpg', '/2.jpg', '/3.jpg', '/4.jpg', '/5.jpg', '/6.jpg', '/7.jpg'];
 
@@ -45,7 +45,7 @@ function computeAngles(rollProgress, dir) {
   });
 }
 
-export default function FlipBook() {
+export default function FlipBookV3() {
   const [page, setPage]       = useState(0);
   const [anim, setAnim]       = useState(null);
   const [angles, setAngles]   = useState(null);

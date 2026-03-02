@@ -1,45 +1,51 @@
-/* Root — dark backdrop, centers the frame */
-.fb-root {
+.fb4-root {
   position: fixed;
   inset: 0;
   background: #111;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* Frame — 4:3 ratio; perspective gives depth to the 3D strip rotation */
-.fb-frame {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  width: min(100vw, calc(100vh * 4 / 3));
   overflow: hidden;
-  perspective: 1200px;
-  perspective-origin: 50% 50%;
-  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.8);
 }
 
-/* Full-screen page layer */
-.fb-page {
+.fb4-book {
+  touch-action: none;
+}
+
+.fb4-page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.fb4-img {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+  draggable: false;
 }
 
 /* Click zones */
-.fb-zone {
-  position: absolute;
+.fb4-zone {
+  position: fixed;
   top: 0;
   height: 100%;
   width: 50%;
   z-index: 10;
   cursor: pointer;
 }
-.fb-zone--left  { left: 0; }
-.fb-zone--right { left: 50%; }
+.fb4-zone--left  { left: 0; }
+.fb4-zone--right { left: 50%; }
 
 /* Controls */
-.fb-controls {
-  position: absolute;
+.fb4-controls {
+  position: fixed;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
@@ -48,7 +54,7 @@
   gap: 16px;
   z-index: 100;
 }
-.fb-controls button {
+.fb4-controls button {
   padding: 10px 24px;
   font-size: 15px;
   font-weight: 700;
@@ -57,14 +63,14 @@
   border: none;
   border-radius: 6px;
 }
-.fb-controls button:disabled {
+.fb4-controls button:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }
-.fb-controls button:not(:disabled):hover {
+.fb4-controls button:not(:disabled):hover {
   background: #fff;
 }
-.fb-count {
+.fb4-count {
   color: #fff;
   font-family: system-ui, sans-serif;
   font-size: 15px;

@@ -1,0 +1,129 @@
+/* Root — dark backdrop, centers the frame */
+.fb-root {
+  position: fixed;
+  inset: 0;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Frame — maintains 4:3 ratio, fits the screen without overflow */
+.fb-frame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  width: min(100vw, calc(100vh * 4 / 3));
+  overflow: hidden;
+  perspective: 1200px;
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.8);
+}
+
+/* Full-screen page layer (relative to frame) */
+.fb-page {
+  position: absolute;
+  inset: 0;
+}
+
+/* Flipping panel — full-width, pivots at the leading edge */
+.fb-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  transform-style: preserve-3d;
+}
+/* Next: whole page folds away left-ward (pivot = left edge) */
+.fb-panel--next {
+  transform-origin: left center;
+  animation: flipNext 0.65s ease-in forwards;
+}
+/* Prev: whole page folds away right-ward (pivot = right edge) */
+.fb-panel--prev {
+  transform-origin: right center;
+  animation: flipPrev 0.65s ease-in forwards;
+}
+
+/* Panel face */
+.fb-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Fold shadow — darkens the trailing edge as the page sweeps away */
+.fb-panel--next .fb-face--front::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  height: 100%; width: 120px;
+  background: linear-gradient(to right, transparent, rgba(0,0,0,0.45));
+  pointer-events: none;
+}
+.fb-panel--prev .fb-face--front::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%; width: 120px;
+  background: linear-gradient(to left, transparent, rgba(0,0,0,0.45));
+  pointer-events: none;
+}
+
+/* Keyframes — sweep to edge-on (90°); destination underneath is revealed */
+@keyframes flipNext {
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(-90deg); }
+}
+@keyframes flipPrev {
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(90deg); }
+}
+
+/* Click zones — transparent overlays on left/right halves */
+.fb-zone {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  z-index: 10;
+  cursor: pointer;
+}
+.fb-zone--left  { left: 0; }
+.fb-zone--right { left: 50%; }
+
+/* Controls */
+.fb-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 100;
+}
+.fb-controls button {
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 6px;
+}
+.fb-controls button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.fb-controls button:not(:disabled):hover {
+  background: #fff;
+}
+.fb-count {
+  color: #fff;
+  font-family: system-ui, sans-serif;
+  font-size: 15px;
+  min-width: 60px;
+  text-align: center;
+}
